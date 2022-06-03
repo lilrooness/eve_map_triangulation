@@ -25,22 +25,25 @@ with open("normalisedmap") as mapfile:
         systems.append(systemName)
 
 
+min = -100
+max = 1100
+
 # wrap system points in a bounding box of points
 # Box Top
-for x in range(0, 1000, 5):
-    p.append([x, 1000])
+for x in range(min, max, 2):
+    p.append([x, max])
     systems.append("BOUNDING_POINT")
 # Box Bottom
-for x in range(0, 1000, 5):
-    p.append([x, 0])
+for x in range(min, max, 2):
+    p.append([x, min])
     systems.append("BOUNDING_POINT")
 # Box Left
-for y in range(0, 1000, 5):
-    p.append([0, y])
+for y in range(min, max, 2):
+    p.append([min, y])
     systems.append("BOUNDING_POINT")
 # Box Right
-for y in range(0, 1000, 5):
-    p.append([1000, y])
+for y in range(min, max, 2):
+    p.append([max, y])
     systems.append("BOUNDING_POINT")
 
 points = numpy.array(p)
