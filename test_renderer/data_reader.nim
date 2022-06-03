@@ -11,20 +11,22 @@ type
 
     CellRef* = ref Cell
 
-proc readSystemNames*(filename: string): seq[string] =
+proc readSystemNames*(filename: string): tuple[names: seq[string], regions: seq[string]] =
     var
         f: File
         line: string
         names: seq[string]
+        regions: seq[string]
 
     f = open(filename)
     defer: f.close()
 
     while f.readLine(line):
         if line.len() > 1:
-            names.add(line)
+            names.add(line.split(" ")[0])
+            regions.add(line.split(" ")[1])
 
-    return names
+    return (names, regions)
 
 proc readVertices*(filename: string): seq[Point] =
     var

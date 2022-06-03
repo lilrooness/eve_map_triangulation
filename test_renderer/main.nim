@@ -61,19 +61,34 @@ glUseProgram(primitiveShader)
 var cellData = readIndices("../output_data/indices")
 readPoints("../output_data/points", cellData)
 var vertices = readVertices("../output_data/vertices")
-var systemNames = readSystemNames("../output_data/lonetrek_names")
+var (systemNames, systemRegions) = readSystemNames("../output_data/lonetrek_names")
 
 var linesList = GetDisplayList()
 var pointsList = GetDisplayList()
+
+type
+    TintColor = (GLfloat, GLfloat, GLfloat)
+
+var color_1: TintColor = (0.0.GLfloat, 1.0.GLfloat, 0.0.GLfloat)
+var color_2: TintColor = (1.0.GLfloat, 1.0.GLfloat, 0.0.GLfloat)
 
 # fill vertex buffer with only one region's data
 for cell in cellData:
     if cell.indices.len() > 1 and systemNames.find(cell.name) > -1 and cell.indices.find(-1) == -1:
     # if cell.indices.len() > 1 and cell.indices.find(-1) == -1:
 
-        pointsList.verteces.add(cell.point.x)
-        pointsList.verteces.add(cell.point.y)
-        pointsList.verteces.add(1.0)
+        var regionNameIndex = systemNames.find(cell.name)
+
+        var color: TintColor = (1.0.GLfloat, 1.0.GLfloat, 1.0.GLfloat)
+
+        if regionNameIndex > -1:
+            var regionName = systemRegions[regionNameIndex]
+            if regionName == "Lonetrek":
+                color = color_1
+            elif regionName == "TheCitadel":
+                color = color_2
+
+        pointsList.AddVertex(cell.point.x, cell.point.y, 1.0, 0.0, 1.0, 0.0)
 
         for i in 0 .. cell.indices.len()-2:
             var ax: float64 = vertices[cell.indices[i]].x
@@ -81,24 +96,16 @@ for cell in cellData:
 
             var bx: float64 = vertices[cell.indices[i+1]].x
             var by: float64 = vertices[cell.indices[i+1]].y
-            linesList.verteces.add(ax.GLfloat)
-            linesList.verteces.add(ay.GLfloat)
-            linesList.verteces.add(1.0.GLfloat)
 
-            linesList.verteces.add(bx.GLfloat)
-            linesList.verteces.add(by.GLfloat)
-            linesList.verteces.add(1.0.GLfloat)
+            linesList.AddVertex(ax, ay, 1.0, color[0], color[1], color[2])
+            linesList.AddVertex(bx, by, 1.0, color[0], color[1], color[2])
+
 
             if i == cell.indices.len()-2:
-                linesList.verteces.add(ax.GLfloat)
-                linesList.verteces.add(ay.GLfloat)
-                linesList.verteces.add(1.0.GLfloat)
+                linesList.AddVertex(ax, ay, 1.0, color[0], color[1], color[2])
                 var firstx: float64 = vertices[cell.indices[0]].x
                 var firsty: float64 = vertices[cell.indices[0]].y
-                linesList.verteces.add(firstx.GLfloat)
-                linesList.verteces.add(firsty.GLfloat)
-                linesList.verteces.add(1.0.GLfloat)
-
+                linesList.AddVertex(firstx, firsty, 1.0, color[0], color[1], color[2])
 
 
 linesList.PushBuffers()
@@ -113,7 +120,6 @@ glDrawArrays(GL_LINES, 0, GLint(linesList.verteces.len()/3))
 
 glBindVertexArray(pointsList.vao)
 glDrawArrays(GL_POINTS, 0, GLint(pointsList.verteces.len()/3))
-# pointsList.add(cell.point.x)
 
 window.glSwapWindow()
 
