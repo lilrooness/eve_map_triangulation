@@ -131,9 +131,9 @@ for sol in sols:
     # sol.nx = sol.x * scale
     # sol.ny = sol.y * scale
     # sol.nz = sol.z * scale
-    sol.nx = ((sol.x + xshift) / xdist) * nmax
-    sol.ny = ((sol.y + yshift) / ydist) * nmax
-    sol.nz = ((sol.z + zshift) / zdist) * nmax
+    sol.nx = ((sol.x - minX + xshift) / (xdist+xshift)) * nmax
+    sol.ny = ((sol.y - minY + yshift) / (ydist+yshift)) * nmax
+    sol.nz = ((sol.z - minZ + zshift) / (zdist+zshift)) * nmax
 
 
 echo "Saving normalised sol data ..."

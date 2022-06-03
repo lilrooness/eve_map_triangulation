@@ -48,7 +48,7 @@ echo err.repr
 
 var dim: GLfloat = 20.129476603142384e+28
 # var projectionMatrix = genOrthographic(0, 1000, 0, 1000, -1.0, 1.0);
-var projectionMatrix = genOrthographic(0, 1000, 0, 1000, -1.0, 1.0);
+var projectionMatrix = genOrthographic(-200, 1200, -200, 1200, -1.0, 1.0);
 
 glDisable(GL_DEPTH_TEST)
 glClearColor(0.0, 0.0, 0.0, 1.0)
@@ -74,9 +74,8 @@ var color_2: TintColor = (1.0.GLfloat, 1.0.GLfloat, 0.0.GLfloat)
 
 # fill vertex buffer with only one region's data
 for cell in cellData:
-    if cell.indices.len() > 1 and systemNames.find(cell.name) > -1 and cell.indices.find(-1) == -1:
-    # if cell.indices.len() > 1 and cell.indices.find(-1) == -1:
-
+    # if cell.indices.len() > 1 and systemNames.find(cell.name) > -1 and cell.indices.find(-1) == -1:
+    if cell.indices.len() > 1 and cell.indices.find(-1) == -1:
         var regionNameIndex = systemNames.find(cell.name)
 
         var color: TintColor = (1.0.GLfloat, 1.0.GLfloat, 1.0.GLfloat)

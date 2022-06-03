@@ -24,6 +24,25 @@ with open("normalisedmap") as mapfile:
         p.append([y, z])
         systems.append(systemName)
 
+
+# wrap system points in a bounding box of points
+# Box Top
+for x in range(0, 1000, 5):
+    p.append([x, 1000])
+    systems.append("BOUNDING_POINT")
+# Box Bottom
+for x in range(0, 1000, 5):
+    p.append([x, 0])
+    systems.append("BOUNDING_POINT")
+# Box Left
+for y in range(0, 1000, 5):
+    p.append([0, y])
+    systems.append("BOUNDING_POINT")
+# Box Right
+for y in range(0, 1000, 5):
+    p.append([1000, y])
+    systems.append("BOUNDING_POINT")
+
 points = numpy.array(p)
 
 print("Calculating Voronoi Diagram ...")
