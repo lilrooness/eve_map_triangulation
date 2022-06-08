@@ -3,6 +3,9 @@ import opengl
 const
     VERTEX_DATA_ATTRIB_POINTER: GLuint = 1
     TINTS_DATA_ATTRIB_POINTER: GLuint = 2
+    # UV_DATA_ATTRIB_POINTER: GLuint = 2
+    # ROTATION_DATA_ATTRIB_POINTER: GLuint = 3
+    # PIVOT_DATA_ATTRIB_POINTER: Gluint = 4
 
 type
     DisplayList* = object
