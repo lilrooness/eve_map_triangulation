@@ -1,6 +1,7 @@
 import std/os
 import std/strutils
 import std/sequtils
+import std/tables
 
 echo "Reading SDE Data ..."
 
@@ -14,7 +15,7 @@ type
 
     SolRef = ref Sol
 
-proc readSolarSystem(fullPath: string): SolRef =
+proc readSolarSystem(fullPath: string, stargateIdsToSystemIds: ref OrderedTable[string, string]): SolRef =
     var
         f: File
         line: string
@@ -46,6 +47,9 @@ proc readSolarSystem(fullPath: string): SolRef =
                 if lineParts[0].strip() == "destination":
                     var id = lineParts[1].strip()
                     links.add(id)
+                elif line.endsWith(":") and not line.contains("position"):
+                    stargateIdsToSystemIds[lineParts[0].strip()] = systemId
+
 
     sol = SolRef(id: systemId, links: links)
     return sol
@@ -70,15 +74,29 @@ var placeName = treetop.split("/")[^1]
 
 var sols: seq[SolRef]
 
+var stargateIdsToSystemIds: ref OrderedTable[string, string]
+stargateIdsToSystemIds = new(OrderedTable[string, string])
+
 for path in walkDirRec(treetop):
     var parts = path.split('\\')
     var filename = parts[^1]
     var dirName = parts[^2]
 
     if filename == "solarsystem.staticdata":
-        var newSol = readSolarSystem(path)
+        var newSol = readSolarSystem(path, stargateIdsToSystemIds)
         newSol.name = dirName
         sols.add(newSol)
+
+echo stargateIdsToSystemIds
+
+# correct link IDS from stargate IDS to systemIds
+for sol in sols:
+    var newLinks: seq[string]
+    for link in sol.links:
+        if stargateIdsToSystemIds.hasKey(link):
+            newLinks.add(stargateIdsToSystemIds[link])
+    
+    sol.links = newLinks
 
 writeSols(sols, "constellation_output", placeName)
     

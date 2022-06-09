@@ -1,5 +1,4 @@
 import std/strutils
-import std/sequtils
 
 import sdl2
 import opengl
@@ -52,7 +51,7 @@ proc ReadData(filename: string): (string, seq[Sol]) =
 var (name, sols) = ReadData("../constellation_output")
 
 var world: verlet.WorldRef = WorldRef(
-    elasticity: 0.1,
+    elasticity: 1,
     points: @[],
     constraints: @[],
     gravBodies: @[]
@@ -63,21 +62,21 @@ var counter = 0.0
 var ids: seq[string]
 
 # generate points
+var id = 0
 for sol in sols:
-    world.points.add(PointRef(x: counter, y: counter, lastX: counter+0.1, lastY: counter-0.1))
+    world.points.add(PointRef(id: id, x: counter, y: counter, lastX: counter+0.1, lastY: counter-0.1))
     ids.add(sol.id)
     counter += 5.0
+    id += 1
 
 # generate constraints using sol links
 var i = 0
 for sol in sols:
-    echo  sol
     for link in sol.links:
         let linkedIdx = ids.find(link)
         # echo "Link:", link.repr
         # echo sol.id.repr
         if linkedIdx != -1:
-            echo "adding  constraint"
             world.constraints.add(Constraint(a: i, b: linkedIdx, length: 4))
     i += 1
 
@@ -85,7 +84,7 @@ var win = WindowInit(SCREEN_W, SCREEN_H, title=name, debug=false)
 
 var primitiveShader = createShaderProgram("shaders/primative/fragment.glsl", "shaders/primative/vertex.glsl")
 
-var projectionMatrix = genOrthographic(0, 100, 0, 100, -1.0, 1.0)
+var projectionMatrix = genOrthographic(-50, 150, -50, 150, -1.0, 1.0)
 
 var uiViewMatrix = genId4D()
 

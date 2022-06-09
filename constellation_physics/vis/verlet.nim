@@ -4,6 +4,7 @@ import math
 type
     Point* = object
         x*, y*, lastX*, lastY*: GLfloat
+        id*: int
 
     PointRef* = ref Point
 
@@ -47,6 +48,28 @@ proc tickWorld*(w: ref World): void =
         p.lastY = p.y
         p.x += dx
         p.y += dy
+
+    # push points away from eachother
+    for p in w.points:
+
+        for o in w.points:
+            if o.id == p.id:
+                continue
+
+            var dist = sqrt(pow(p.x - o.x, 2) + pow(p.y - o.y, 2))
+            var maxDist: float = 20.0
+
+            if dist < maxDist:
+                var
+                    nx = (p.x - o.x)/dist
+                    ny = (p.y - o.y)/dist
+                
+                p.x += (nx * ((maxDist - dist)/maxDist))/2
+                p.y += (ny * ((maxDist - dist)/maxDist))/2
+
+                o.x -= (nx * ((maxDist - dist)/maxDist))/2
+                o.y -= (ny * ((maxDist - dist)/maxDist))/2
+
     
     for c in w.constraints:
         var
