@@ -64,15 +64,15 @@ proc tickWorld*(w: ref World): void =
 
         if length < c.length:
             var diff = c.length - length
-            b.x -= (nx * (diff/2))
-            b.y -= (ny * (diff/2))
+            b.x -= (nx * (diff/2)) * w.elasticity
+            b.y -= (ny * (diff/2)) * w.elasticity
 
-            a.x += (nx * (diff/2))
-            a.y += (ny * (diff/2))
+            a.x += (nx * (diff/2)) * w.elasticity
+            a.y += (ny * (diff/2)) * w.elasticity
         elif length > c.length:
             var diff = length - c.length
-            b.x += (nx * (diff/2))
-            b.y += (ny * (diff/2))
+            b.x += (nx * (diff/2)) * w.elasticity
+            b.y += (ny * (diff/2)) * w.elasticity
 
-            a.x -= (nx * (diff/2))
-            a.y -= (ny * (diff/2))
+            a.x -= (nx * (diff/2)) * w.elasticity
+            a.y -= (ny * (diff/2)) * w.elasticity

@@ -52,7 +52,7 @@ proc ReadData(filename: string): (string, seq[Sol]) =
 var (name, sols) = ReadData("../constellation_output")
 
 var world: verlet.WorldRef = WorldRef(
-    elasticity: 1.0,
+    elasticity: 0.1,
     points: @[],
     constraints: @[],
     gravBodies: @[]
