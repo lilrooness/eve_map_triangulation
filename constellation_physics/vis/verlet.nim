@@ -17,6 +17,8 @@ type
         length*: GLfloat
 
     World* = object
+        repulsionDist*: float
+        size*: float
         elasticity*: float
         points*: seq[PointRef]
         constraints*: seq[Constraint]
@@ -35,12 +37,12 @@ proc tickWorld*(w: ref World): void =
 
         if p.x < 0 and dx < 0:
             dx *= -1
-        elif p.x > 100 and dx > 0:
+        elif p.x > w.size and dx > 0:
             dx *= -1
         
         if p.y < 0 and dy < 0:
             dy *= -1
-        elif p.y > 100 and dy > 0:
+        elif p.y > w.size and dy > 0:
             dy *= -1
         
 
@@ -57,7 +59,7 @@ proc tickWorld*(w: ref World): void =
                 continue
 
             var dist = sqrt(pow(p.x - o.x, 2) + pow(p.y - o.y, 2))
-            var maxDist: float = 20.0
+            var maxDist = w.repulsionDist
 
             if dist < maxDist:
                 var

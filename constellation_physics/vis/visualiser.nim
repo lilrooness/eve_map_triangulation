@@ -51,6 +51,8 @@ proc ReadData(filename: string): (string, seq[Sol]) =
 var (name, sols) = ReadData("../constellation_output")
 
 var world: verlet.WorldRef = WorldRef(
+    repulsionDist: 100.0,
+    size: 200.0,
     elasticity: 1,
     points: @[],
     constraints: @[],
@@ -77,14 +79,14 @@ for sol in sols:
         # echo "Link:", link.repr
         # echo sol.id.repr
         if linkedIdx != -1:
-            world.constraints.add(Constraint(a: i, b: linkedIdx, length: 4))
+            world.constraints.add(Constraint(a: i, b: linkedIdx, length: 15))
     i += 1
 
 var win = WindowInit(SCREEN_W, SCREEN_H, title=name, debug=false)
 
 var primitiveShader = createShaderProgram("shaders/primative/fragment.glsl", "shaders/primative/vertex.glsl")
 
-var projectionMatrix = genOrthographic(-50, 150, -50, 150, -1.0, 1.0)
+var projectionMatrix = genOrthographic(-100, 300, -100, 300, -1.0, 1.0)
 
 var uiViewMatrix = genId4D()
 
