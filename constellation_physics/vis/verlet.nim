@@ -8,10 +8,6 @@ type
 
     PointRef* = ref Point
 
-    GravBody* = object
-        x*, y*: GLfloat
-        mass: float
-
     Constraint* = object
         a*, b*: int
         length*: GLfloat
@@ -22,13 +18,8 @@ type
         elasticity*: float
         points*: seq[PointRef]
         constraints*: seq[Constraint]
-        gravBodies*: seq[GravBody]
     
     WorldRef* = ref World
-
-
-# proc dist(ax, ay, bx, by: float): float =
-#     return sqrt(pow(ax - bx, 2) + pow(ay - by, 2))
 
 proc tickWorld*(w: ref World): void =
     for p in w.points:

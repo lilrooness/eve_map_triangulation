@@ -55,8 +55,7 @@ var world: verlet.WorldRef = WorldRef(
     size: 200.0,
     elasticity: 1,
     points: @[],
-    constraints: @[],
-    gravBodies: @[]
+    constraints: @[]
 )
 
 var counter = 0.0
