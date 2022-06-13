@@ -1,4 +1,5 @@
 import std/strutils
+import std/tables
 
 import sdl2
 import opengl
@@ -14,7 +15,7 @@ const
 
 type
     Sol = object
-        name, id: string
+        region, name, id: string
         links: seq[string]
 
 proc ReadData(filename: string): (string, seq[Sol]) =
@@ -42,7 +43,8 @@ proc ReadData(filename: string): (string, seq[Sol]) =
         name = parts[0]
         id = parts[1]
         links = parts[2..^1]
-        sol = Sol(name: name, id: id, links: links)
+        var regionNameAndName = name.split(":")
+        sol = Sol(region: regionNameAndName[0], name: regionNameAndName[1], id: id, links: links)
         sols.add(sol)
 
     return (header, sols)
@@ -50,42 +52,44 @@ proc ReadData(filename: string): (string, seq[Sol]) =
 
 var (name, sols) = ReadData("../constellation_output")
 
-var world: verlet.WorldRef = WorldRef(
-    repulsionDist: 100.0,
-    size: 200.0,
-    elasticity: 1,
-    points: @[],
-    constraints: @[]
-)
+var worlds = new(OrderedTable[string, WorldRef])
+var constellationIds = new(OrderedTable[string, seq[string]])
 
-var counter = 0.0
 
-var ids: seq[string]
+var worldSize = 100.0
+var constraintLen = 10.0
 
 # generate points
 var id = 0
 for sol in sols:
-    world.points.add(PointRef(id: id, x: counter, y: counter, lastX: counter+0.1, lastY: counter-0.1))
-    ids.add(sol.id)
-    counter += 5.0
+    if not (sol.region in worlds):
+        worlds[sol.region] = WorldRef(
+            repulsionDist: 50,
+            size: worldSize,
+            elasticity: 1,
+            points: @[],
+            constraints: @[]
+        )
+        constellationIds[sol.region] = @[]
+    
+    var counter = worlds[sol.region].points.len.float64
+    worlds[sol.region].points.add(PointRef(id: id, x: counter, y: counter, lastX: counter+0.1, lastY: counter-0.1))
+    constellationIds[sol.region].add(sol.id)
     id += 1
 
 # generate constraints using sol links
-var i = 0
 for sol in sols:
     for link in sol.links:
-        let linkedIdx = ids.find(link)
-        # echo "Link:", link.repr
-        # echo sol.id.repr
+        let linkedIdx = constellationIds[sol.region].find(link)
+        let thisId = constellationIds[sol.region].find(sol.id)
         if linkedIdx != -1:
-            world.constraints.add(Constraint(a: i, b: linkedIdx, length: 15))
-    i += 1
+            worlds[sol.region].constraints.add(Constraint(a: thisId, b: linkedIdx, length: constraintLen))
 
 var win = WindowInit(SCREEN_W, SCREEN_H, title=name, debug=false)
 
 var primitiveShader = createShaderProgram("shaders/primative/fragment.glsl", "shaders/primative/vertex.glsl")
 
-var projectionMatrix = genOrthographic(-100, 300, -100, 300, -1.0, 1.0)
+var projectionMatrix = genOrthographic(0, 1000, 0, 1000, -1.0, 1.0)
 
 var uiViewMatrix = genId4D()
 
@@ -109,17 +113,37 @@ var quit = false
 while not quit:
 
     list.ClearBuffers()
-    for p in world.points:
-        list.AddVertex(p.x.GLfloat, p.y.GLfloat, 1.0.GLfloat, 1.0.GLfloat, 1.0.GLfloat, 1.0.GLfloat)
-    list.PushBuffers()
-
     linesList.ClearBuffers()
-    for c in world.constraints:
+
+    # add gridlines
+    for i in 1 ..< 10:
+        # verticle line
+        linesList.AddVertex(i.GLfloat * 100, 0, 1.0, 1.0.GLfloat, 1.0.GLfloat, 1.0.GLfloat)
+        linesList.AddVertex(i.GLfloat * 100, 1000, 1.0, 1.0.GLfloat, 1.0.GLfloat, 1.0.GLfloat)
+
+        # horizontal line
+        linesList.AddVertex(0, i.GLfloat * 100, 1.0, 1.0.GLfloat, 1.0.GLfloat, 1.0.GLfloat)
+        linesList.AddVertex(1000, i.GLfloat * 100, 1.0, 1.0.GLfloat, 1.0.GLfloat, 1.0.GLfloat)
+
+    var regionNum = 0
+    for region in worlds.keys:
         var
-            a = world.points[c.a]
-            b = world.points[c.b]
-        linesList.AddVertex(a.x, a.y, 1.0, 1.0, 1.0, 1.0)
-        linesList.AddVertex(b.x, b.y, 1.0, 1.0, 1.0, 1.0)
+            xmod, ymod: float64
+        
+        xmod = ((regionNum mod 10).float64 * worldSize)
+        ymod = worldSize * (int(regionNum/10)).float64
+        for p in worlds[region].points:
+            list.AddVertex(p.x.GLfloat + xmod, p.y.GLfloat + ymod, 1.0.GLfloat, 1.0.GLfloat, 1.0.GLfloat, 1.0.GLfloat)
+
+        for c in worlds[region].constraints:
+            var
+                a = worlds[region].points[c.a]
+                b = worlds[region].points[c.b]
+            linesList.AddVertex(a.x + xmod, a.y + ymod, 1.0, 1.0, 1.0, 1.0)
+            linesList.AddVertex(b.x + xmod, b.y + ymod, 1.0, 1.0, 1.0, 1.0)
+        
+        regionNum += 1
+    list.PushBuffers()
     linesList.PushBuffers()
 
     glClear(GL_COLOR_BUFFER_BIT)
@@ -142,4 +166,5 @@ while not quit:
         continue
 
     lastTick = now
-    verlet.tickWorld(world)
+    for region in worlds.keys:
+        verlet.tickWorld(worlds[region])

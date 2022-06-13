@@ -10,7 +10,7 @@ type
     Sol = object
         # x, y, z: float64
         # nx, ny, nz: float64
-        name, id, nameId: string
+        region, name, id, nameId: string
         links: seq[string]
 
     SolRef = ref Sol
@@ -19,6 +19,8 @@ proc readSolarSystem(fullPath: string, stargateIdsToSystemIds: ref OrderedTable[
     var
         f: File
         line: string
+    
+    var regionName = fullPath.split('\\')[^3]
 
     f = open(fullPath)
     defer: f.close()
@@ -51,7 +53,7 @@ proc readSolarSystem(fullPath: string, stargateIdsToSystemIds: ref OrderedTable[
                     stargateIdsToSystemIds[lineParts[0].strip()] = systemId
 
 
-    sol = SolRef(id: systemId, links: links)
+    sol = SolRef(id: systemId, links: links, region: regionName)
     return sol
 
 proc writeSols(sols: seq[SolRef], filename: string, placeName: string): void =
@@ -61,7 +63,7 @@ proc writeSols(sols: seq[SolRef], filename: string, placeName: string): void =
     f.writeLine(placeName)
 
     for sol in sols:
-        var line = @[sol.name, sol.id].concat(sol.links)
+        var line = @[sol.region&":"&sol.name, sol.id].concat(sol.links)
         f.writeLine(line.join(","))
 
 if paramCount() < 1:
